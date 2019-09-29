@@ -1,24 +1,13 @@
 version: 0.2
-environment_variables:
-    plaintext:
-        S3_BUCKET: "jakob.pennington.io"
 phases:
-    install:
-        commands:
-            - echo Installing source NPM dependencies...
-            - npm install
-            - npm install -g @angular/cli
-    build:
-        commands:
-            - echo Build started on `date`
-            - ng build --prod
-    post_build:
-         commands:
-            - aws s3 rm s3://${S3_BUCKET} --recursive
-            - aws s3 cp dist/PenningtonIO/ s3://${S3_BUCKET} --recursive
-            - echo Build completed on `date`
-artifacts:
-    files:
-        - '**/*'
-    base-directory: 'dist*'
-    discard-paths: yes
+  install:
+    runtime-versions:
+      nodejs: 8
+    commands:
+      - npm install -g @angular/cli@6.0.0
+  build:
+    commands:
+      - ng build --configuration=$BUILD_ENV --build-optimizer
+  post_build:
+    commands:
+      - aws s3 sync dist/ s3://$BUCKET_NAME --delete
